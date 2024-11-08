@@ -93,3 +93,22 @@ def evaluate_model(model, X, y):
     mean_accuracy = model.score(X, y)
     
     return kappa, mean_accuracy
+
+
+def get_labeled_subset(data):
+    """
+    Get all data points with labels from a given train set.
+
+    Parameters
+    ----------
+    X : DataFrame
+        Input data, including target column "sii".
+
+    Returns
+    -------
+    X : DataFrame
+        Input data, including only rows where target is not missing.
+
+    """
+    data = data.dropna(subset=["sii"])
+    return data 
