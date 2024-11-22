@@ -1,2 +1,6 @@
+# series data
 series_test.parquet/
 series_train.parquet/
+
+# Byte-compiled files
+__pycache__/
