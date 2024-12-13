@@ -11,7 +11,7 @@ def main():
     - creates csv files for train and test
     """
 
-    df_train, df_test, _ = load_tabular_data("train.csv", "test.csv", "data_dictionary.csv")
+    df_train, df_test, _ = load_tabular_data("../data/train.csv", "../data/test.csv", "../data/data_dictionary.csv")
 
     unlabeled_data = df_train[df_train['sii'].isna()]  # Keep rows where 'sii' is NaN
     labeled_data = df_train[df_train['sii'].notna()]  # Keep rows where 'sii' is not NaN
@@ -28,8 +28,8 @@ def main():
     test = test.drop(labels=columns_not_in_test, axis=1)
     
     print("# train samples: ", len(train), ", # test samples: ", len(test))
-    train.to_csv("tabdata_train.csv", header=True)
-    test.to_csv("tabdata_test.csv", header=True)
+    train.to_csv("../data/tabdata_train.csv", header=True)
+    test.to_csv("../data/tabdata_test.csv", header=True)
 
 if __name__ == "__main__":
     main()

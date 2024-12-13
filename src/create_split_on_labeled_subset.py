@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from utils import load_tabular_data, add_series_features, get_labeled_subset
+from src.utils import load_tabular_data, add_series_features, get_labeled_subset
 
 def main():
     """
@@ -12,9 +12,9 @@ def main():
     - drops columns that are not in test set
     - creates csv files for train and test
     """
-    df_train, df_test, _ = load_tabular_data('train.csv', 'test.csv', 'data_dictionary.csv')
+    df_train, df_test, _ = load_tabular_data('../data/train.csv', '../data/test.csv', '../data/data_dictionary.csv')
 
-    df_train = add_series_features(df_train, 'series_train.parquet')
+    df_train = add_series_features(df_train, '../data/series_train.parquet')
 
     df_train = get_labeled_subset(df_train)
 
@@ -25,8 +25,8 @@ def main():
     train = train.drop(labels=columns_not_in_test, axis=1)
     test = test.drop(labels=columns_not_in_test, axis=1)
 
-    train.to_csv("baseline_train.csv", header=True)
-    test.to_csv("baseline_test.csv", header=True)
+    train.to_csv("../data/baseline_train.csv", header=True)
+    test.to_csv("../data/baseline_test.csv", header=True)
 
 
 if __name__ == "__main__":

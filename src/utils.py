@@ -4,6 +4,7 @@ from imblearn.over_sampling import SMOTENC
 from sklearn.impute import KNNImputer, SimpleImputer
 from sklearn.metrics import cohen_kappa_score
 import os
+import tsfel
 
 
 
@@ -68,7 +69,37 @@ def add_series_features(X, series_path):
         X.loc[X['id'] == id, 'light_mean'] = df_series['light'].mean()
         X.loc[X['id'] == id, 'light_std'] = df_series['light'].std()
     
-    return X    
+    return X
+
+def extract_series_features(X, series_path):
+    """
+    First clean the series data and then extract features from it.
+
+    Parameters
+    ----------
+    X : DataFrame
+        Input data.
+    series_path : str
+        Path to the series folder.
+
+    Returns
+    -------
+    X : DataFrame
+        Input data with added features.
+    """
+    cfg = tsfel.get_features_by_domain()
+
+    for id in X['id'].values:
+        # first check if the file exists
+        if not os.path.exists(f'{series_path}\id={id}'):
+            continue
+
+        df_series = pd.read_parquet(f'{series_path}\id={id}', engine='pyarrow')
+        df_series = df_series.dropna()
+        df_series = df_series[df_series['non_wear_flag'] != 1]
+
+
+    return None
     
 
 def evaluate_model(model, X, y):
@@ -210,3 +241,43 @@ def oversample_tabdata(data):
     X_resampled["sii"] = y_resampled
 
     return X_resampled
+
+
+def label_propagation(data, model):
+    """
+    Propagates labels for the given tabular data using the given model.
+
+    Parameters
+    ----------
+    data : DataFrame
+        Input data, including target column "sii". 
+        This should be the train set with missing labels.
+
+    model : object
+        Model to be used for label propagation.
+
+    Returns
+    -------
+    data : DataFrame
+        Input data with propagated labels.
+
+    """
+
+    # Separate data with missing labels
+    data_missing = data[data["sii"].isnull()]
+    data_labeled = data.dropna(subset=["sii"])
+
+    # Separate target value
+    target = data_labeled["sii"]
+    data_labeled = data_labeled.drop(columns="sii")
+
+    # Fit the model
+    model.fit(data_labeled, target)
+
+    # Predict missing labels
+    data_missing["sii"] = model.predict(data_missing.drop(columns="sii"))
+
+    # Combine data with propagated labels
+    data = pd.concat([data_missing, data_labeled])
+
+    return data
