@@ -185,6 +185,7 @@ def impute_tabdata(data, dict_path):
 
     # Drop PCIAT features as they are not part of train data
     numerical_features = [s for s in numerical_features if "PCIAT" not in s]
+    numerical_features.extend(['enmo_mean', 'enmo_std', 'light_mean', 'light_std'])
 
     # Extract categorical features
     categorical_features = data_dict[
@@ -264,7 +265,7 @@ def label_propagation(data, model):
     """
 
     # Separate data with missing labels
-    data_missing = data[data["sii"].isnull()]
+    data_missing = data[data["sii"].isna()]
     data_labeled = data.dropna(subset=["sii"])
 
     # Separate target value
