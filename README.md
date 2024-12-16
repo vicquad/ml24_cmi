@@ -16,5 +16,9 @@ It consists of physical activity data (accelerometer series data and tabular dat
 - Vita Komel
 
 ## Project structure
-
-## Usage
+- `data/` - directory for storing the datasets
+- `experiments/` - directory for storing the results of the experiments with the models
+- `src/` - directory for storing the source code
+- `README.md` - description of the project
+- `main.ipynb` - main notebook with the project code
+- `.gitignore` - file with the list of files and directories that should be ignored by git

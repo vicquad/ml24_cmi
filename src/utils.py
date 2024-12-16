@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from imblearn.over_sampling import SMOTENC
+from imblearn.over_sampling import SMOTE
 from sklearn.impute import KNNImputer, SimpleImputer
 from sklearn.metrics import cohen_kappa_score
 import os
@@ -147,7 +147,7 @@ def get_labeled_subset(data):
     return data 
 
 
-def impute_tabdata(data, dict_path):
+def impute_tabdata(data, test, dict_path):
     """
     Imputes missing values in the given set of tabular data.
 
@@ -199,7 +199,8 @@ def impute_tabdata(data, dict_path):
     data[categorical_features] = data[categorical_features].astype(str)
 
     # impute numerical features with KNNImputer
-    num_imputer = KNNImputer(n_neighbors=3)
+    # num_imputer = KNNImputer(n_neighbors=3)
+    num_imputer = SimpleImputer(strategy="mean")
     data[numerical_features] = num_imputer.fit_transform(data[numerical_features])
 
     # impute numerical features with SimpleImputer - most frequent value
@@ -212,7 +213,12 @@ def impute_tabdata(data, dict_path):
     # Combine data and target again
     data["sii"] = target
 
-    return data
+    # Impute test data
+    test[numerical_features] = num_imputer.transform(test[numerical_features])
+    imputed_categorical_test = cat_imputer.transform(test[categorical_features])
+    test[categorical_features] = pd.DataFrame(imputed_categorical_test, columns=categorical_features, index=test.index)
+
+    return data, test
 
 def oversample_tabdata(data):
     """
@@ -234,10 +240,8 @@ def oversample_tabdata(data):
     y = data["sii"]
     X = data.drop(columns="sii")
 
-    categorical_features = data.select_dtypes(include=['object', 'category']).columns.to_list()
-
-    smote_nc = SMOTENC(categorical_features=categorical_features, random_state=42)
-    X_resampled, y_resampled = smote_nc.fit_resample(X, y)
+    smote = SMOTE(random_state=42)
+    X_resampled, y_resampled = smote.fit_resample(X, y)
 
     X_resampled["sii"] = y_resampled
 
@@ -276,9 +280,10 @@ def label_propagation(data, model):
     model.fit(data_labeled, target)
 
     # Predict missing labels
-    data_missing["sii"] = model.predict(data_missing.drop(columns="sii"))
+    data_missing.loc[:, "sii"] = model.predict(data_missing.drop(columns="sii"))
 
     # Combine data with propagated labels
+    data_labeled["sii"] = target
     data = pd.concat([data_missing, data_labeled])
 
     return data
